@@ -1,0 +1,62 @@
+import json
+import os
+from typing import Any
+
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+
+# ----- CONFIG -----
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
+
+# Your details
+CLIENT_ID = "523623906981-lk0mh2h9p0mm7o6dmtpei28jfg8ufkpm.apps.googleusercontent.com"
+CLIENT_SECRET = "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"
+REDIRECT_URI_PORT = 1337
+
+
+def load_creds(path: str) -> Credentials | None:
+    if os.path.exists(path):
+        creds = Credentials.from_authorized_user_file(path, SCOPES)
+        # Refresh if expired and refresh token available
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        return creds
+    return None
+
+
+def save_creds(path: str, creds: Any) -> None:
+    with open(path, "w") as f:
+        f.write(creds.to_json())
+
+
+def build_flow() -> InstalledAppFlow:
+    # Use PKCE with an "installed" client config; no client secret needed.
+    client_config: dict[str, Any] = {
+        "installed": {
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+            "project_id": "spam-deleter-469300",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [f"http://localhost:{REDIRECT_URI_PORT}/"],
+        }
+    }
+    return InstalledAppFlow.from_client_config(client_config, SCOPES)
+
+
+def get_gmail_service(credentials_path: str = "token.json") -> Any:
+    creds = load_creds(credentials_path)
+    if not creds or not creds.valid:
+        flow = build_flow()
+        # Spin up a local server on the exact port in your redirect URI (1337)
+        creds = flow.run_local_server(
+            host="localhost",
+            port=REDIRECT_URI_PORT,
+            authorization_prompt_message="We need to access your email",
+            success_message="You're all set! You can close this tab.",
+            open_browser=True,
+        )
+        save_creds(credentials_path, creds)
+    return build("gmail", "v1", credentials=creds)
