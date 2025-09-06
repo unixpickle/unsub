@@ -4,3 +4,4 @@ uv.lock
 token.json
 .python-version
 .vscode
+*.egg-info/

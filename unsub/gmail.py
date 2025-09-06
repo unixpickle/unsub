@@ -1,7 +1,12 @@
+import base64
+import html
 import json
 import os
-from typing import Any
+import re
+from dataclasses import dataclass
+from typing import Any, Iterator
 
+from bs4 import BeautifulSoup
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -60,3 +65,87 @@ def get_gmail_service(credentials_path: str = "token.json") -> Any:
         )
         save_creds(credentials_path, creds)
     return build("gmail", "v1", credentials=creds)
+
+
+@dataclass
+class Email:
+    id: str
+    sender: str
+    subject: str
+    snippet: str
+    raw_body: str
+
+    @property
+    def body(self) -> str:
+        return base64.urlsafe_b64decode(self.raw_body).decode("utf-8", errors="replace")
+
+    def link_urls_and_text(self, max_text_len: int = 50) -> list[tuple[str, str]]:
+        html_content = self.body
+        soup = BeautifulSoup(html_content, "html.parser")
+
+        links: list[tuple[str, str]] = []
+        for a in soup.find_all("a", href=True):
+            href: str = a["href"].strip()  # type: ignore
+            if text := a.get_text(strip=True):
+                if len(text) <= max_text_len:
+                    links.append((href, text))
+
+        return links
+
+
+def _header(headers: list[dict[str, str]], name: str, default: str = "") -> str:
+    for h in headers:
+        if h.get("name", "").lower() == name.lower():
+            return h.get("value", default)
+    return default
+
+
+def _clean_text(s: str) -> str:
+    s = html.unescape(s)
+
+    # Remove zero-width characters (u200b, u200c, u200d, feff, etc.)
+    s = re.sub(r"[\u200b\u200c\u200d\ufeff]", "", s)
+
+    return s
+
+
+def iter_emails(service: Any, page_size: int = 100) -> Iterator[Email]:
+    next_page_token = None
+
+    while True:
+        resp = (
+            service.users()
+            .messages()
+            .list(
+                userId="me",
+                labelIds=["INBOX"],
+                maxResults=page_size,
+                pageToken=next_page_token,
+            )
+            .execute()
+        )
+
+        if not (messages := resp.get("messages", [])):
+            break
+
+        for m in messages:
+            full = (
+                service.users()
+                .messages()
+                .get(userId="me", id=m["id"], format="full")
+                .execute()
+            )
+
+            payload = full.get("payload", {})
+            headers = payload.get("headers", [])
+
+            yield Email(
+                id=full["id"],
+                sender=_header(headers, "From", "(unknown)"),
+                subject=_header(headers, "Subject", "(no subject)"),
+                snippet=_clean_text(full.get("snippet", "").strip()),
+                raw_body=payload.get("body", {}).get("data", ""),
+            )
+
+        if not (next_page_token := resp.get("nextPageToken")):
+            break
