@@ -1,6 +1,5 @@
 import base64
 import html
-import json
 import os
 import re
 from dataclasses import dataclass
@@ -11,6 +10,8 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+
+from .link import Link
 
 # ----- CONFIG -----
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
@@ -79,16 +80,16 @@ class Email:
     def body(self) -> str:
         return base64.urlsafe_b64decode(self.raw_body).decode("utf-8", errors="replace")
 
-    def link_urls_and_text(self, max_text_len: int = 50) -> list[tuple[str, str]]:
+    def link_urls_and_text(self, max_text_len: int = 50) -> list[Link]:
         html_content = self.body
         soup = BeautifulSoup(html_content, "html.parser")
 
-        links: list[tuple[str, str]] = []
+        links: list[Link] = []
         for a in soup.find_all("a", href=True):
             href: str = a["href"].strip()  # type: ignore
             if text := a.get_text(strip=True):
                 if len(text) <= max_text_len:
-                    links.append((href, text))
+                    links.append(Link(href=href, text=text))
 
         return links
 
