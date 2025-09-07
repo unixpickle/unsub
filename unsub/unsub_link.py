@@ -1,14 +1,7 @@
 from openai import OpenAI
 
+from .api_util import BadResponseFormat, completion
 from .link import Link
-
-
-class CompletionError(Exception):
-    pass
-
-
-class BadResponseFormat(Exception):
-    pass
 
 
 def find_unsubscribe_link(
@@ -35,18 +28,9 @@ def find_unsubscribe_link(
             url_text = url_text[:max_url_len] + "..."
         link_text += f"{i+1}. {repr(link.text)} {repr(url_text)}"
 
-    try:
-        response = client.responses.create(
-            model="gpt-4o",
-            instructions=instructions,
-            input=link_text,
-        )
-    except Exception as exc:
-        raise CompletionError("API call failed") from exc
-    if err := response.error:
-        raise CompletionError(f"error: {err}")
+    response = completion(client, instructions=instructions, input=link_text)
 
-    last_line = response.output_text.strip().splitlines()[-1]
+    last_line = response.strip().splitlines()[-1]
     if not last_line.startswith("Answer:"):
         raise BadResponseFormat("no answer at end of response")
 
