@@ -31,11 +31,7 @@ def main():
         try:
             spam = is_spam(openai_client, email)
             output_data["spam"] = spam
-            links = email.links()
-            if len(links):
-                link = find_unsubscribe_link(openai_client, links)
-            else:
-                link = None
+            link = find_unsubscribe_link(openai_client, email)
             output_data["unsub_link"] = asdict(link) if link else None
             if spam or link:
                 print(
