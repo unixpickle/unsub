@@ -11,7 +11,8 @@ def is_spam(
     instructions = (
         "Based on information about an email, predict if it's promotional (spam) or not. "
         "Emails about orders that were successfully delivered, or personal emails, are not spam. "
-        "On the other hand, emails about sales, promotions, or deals are spam. "
+        "On the other hand, emails about sales, promotions, or newsletters or random news "
+        "updates from brands are spam. "
         "You may think about the message, but end your response with a new line that says either "
         "SPAM or NOT SPAM. If you are unsure, err on the side of caution and say NOT SPAM."
     )

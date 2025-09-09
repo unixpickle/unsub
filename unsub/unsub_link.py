@@ -12,7 +12,9 @@ def find_unsubscribe_link(
 ) -> Link | None:
     if len(links) > max_links_per_call:
         for i in range(0, len(links), max_links_per_call):
-            if link := find_unsubscribe_link(client, links, max_url_len=max_url_len):
+            if link := find_unsubscribe_link(
+                client, links[i : i + max_links_per_call], max_url_len=max_url_len
+            ):
                 return link
 
     instructions = (

@@ -80,7 +80,7 @@ class Email:
     def body(self) -> str:
         return base64.urlsafe_b64decode(self.raw_body).decode("utf-8", errors="replace")
 
-    def link_urls_and_text(self, max_text_len: int = 50) -> list[Link]:
+    def links(self, max_text_len: int = 100) -> list[Link]:
         html_content = self.body
         soup = BeautifulSoup(html_content, "html.parser")
 
@@ -119,7 +119,7 @@ def iter_emails(service: Any, page_size: int = 100) -> Iterator[Email]:
             .messages()
             .list(
                 userId="me",
-                labelIds=["INBOX"],
+                labelIds=["INBOX", "CATEGORY_PROMOTIONS"],
                 maxResults=page_size,
                 pageToken=next_page_token,
             )
@@ -140,12 +140,18 @@ def iter_emails(service: Any, page_size: int = 100) -> Iterator[Email]:
             payload = full.get("payload", {})
             headers = payload.get("headers", [])
 
+            body = payload.get("body", {}).get("data", "")
+            if not body:
+                for part in payload.get("parts", []):
+                    if part["mimeType"] == "text/html":
+                        body = body or part.get("body", {}).get("data", "")
+
             yield Email(
                 id=full["id"],
                 sender=_header(headers, "From", "(unknown)"),
                 subject=_header(headers, "Subject", "(no subject)"),
                 snippet=_clean_text(full.get("snippet", "").strip()),
-                raw_body=payload.get("body", {}).get("data", ""),
+                raw_body=body,
             )
 
         if not (next_page_token := resp.get("nextPageToken")):
