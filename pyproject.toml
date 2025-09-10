@@ -9,5 +9,6 @@ dependencies = [
     "google-auth-oauthlib",
     "google-api-python-client",
     "beautifulsoup4",
-    "openai"
+    "openai",
+    "selenium",
 ]

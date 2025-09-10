@@ -1,3 +1,5 @@
+from typing import Any, Literal, TypedDict
+
 from openai import OpenAI
 
 
@@ -9,7 +11,25 @@ class BadResponseFormat(Exception):
     pass
 
 
-def completion(client: OpenAI, instructions: str, input: str) -> str:
+class ChatMessageContentText(TypedDict):
+    type: Literal["input_text", "output_text"]
+    text: str
+
+
+class ChatMessageContentImage(TypedDict):
+    type: Literal["input_image"]
+    image_url: str
+
+
+ChatMessageContent = ChatMessageContentText | ChatMessageContentImage
+
+
+class ChatMessage(TypedDict):
+    role: Literal["user", "assistant"]
+    content: str | list[ChatMessageContent]
+
+
+def completion(client: OpenAI, instructions: str, input: Any) -> str:
     try:
         response = client.responses.create(
             model="gpt-4o",
