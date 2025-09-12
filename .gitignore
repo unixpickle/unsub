@@ -6,3 +6,4 @@ token.json
 .vscode
 *.egg-info/
 emails/
+simulations/
