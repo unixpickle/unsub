@@ -22,30 +22,9 @@ def unsubscribe_on_website(
     driver: WebDriver,
     url: str,
     max_steps: int = 10,
+    max_output_len: int = 512,
 ) -> tuple[Literal["success", "failure", "timeout"], list[ChatMessage]]:
     driver.get(url)
-    driver.execute_script(
-        """
-        window.logMessages = '';
-        console.log('hi');
-        """
-    )
-    driver.execute_script(
-        """
-        window.logMessages = '';
-        console.log('foo');
-        window.print = (x) => {
-            logMessages += x.toString() + '\\n';
-        }
-        window.unspamStatus = null;
-        window.failure = () => {
-            window.unspamStatus = 'failure';
-        }
-        window.success = () => {
-            window.unspamStatus = 'success';
-        }
-        """
-    )
 
     conversation: list[ChatMessage] = []
     previous_output = None
@@ -58,6 +37,11 @@ def unsubscribe_on_website(
         }
         msg = ""
         if previous_output:
+            if len(previous_output) > max_output_len:
+                previous_output = previous_output[:max_output_len]
+                previous_output += (
+                    f"\n... output truncated at {max_output_len} chars ...\n"
+                )
             msg = f"Output from previous code:\n```\n{previous_output}\n```\n\n"
         msg += (
             "Below is a screenshot of a webpage from an email Unsubscribe link. "
@@ -98,6 +82,24 @@ def unsubscribe_on_website(
             previous_output = "ERROR: expected exactly one codeblock in your response"
             continue
 
+        # Rerun this every loop iteration in case the page changed
+        # or reloaded.
+        driver.execute_script(
+            """
+            window.logMessages = '';
+            window.print = (x) => {
+                window.logMessages += x.toString() + '\\n';
+            }
+            window.unspamStatus = null;
+            window.failure = () => {
+                window.unspamStatus = 'failure';
+            }
+            window.success = () => {
+                window.unspamStatus = 'success';
+            }
+            """
+        )
+
         code_to_run = matches[0].strip()
         try:
             driver.execute_script(code_to_run)
@@ -105,15 +107,9 @@ def unsubscribe_on_website(
             previous_output = f"ERROR while executing script: {e}"
             continue
 
-        previous_output = driver.execute_script(
-            """
-            const x = window.logMessages;
-            window.logMessages = "";
-            return window.logMessages;
-            """
-        )
-
+        previous_output = driver.execute_script("return window.logMessages")
         status = driver.execute_script("return window.unspamStatus")
+
         if status:
             return status, conversation
 

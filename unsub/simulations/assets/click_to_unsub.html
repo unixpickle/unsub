@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Unsubscribe Confirmation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f9f9f9;
+        }
+
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 24px;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .keep {
+            background-color: #e0e0e0;
+        }
+
+        .keep:hover {
+            background-color: #d6d6d6;
+        }
+
+        .unsubscribe {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .unsubscribe:hover {
+            background-color: #c9302c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Are you sure you'd like to unsubscribe?</h1>
+        <div class="buttons">
+            <button class="keep" onclick="location.href='/staysubscribed'">
+                Keep me subscribed
+            </button>
+            <button class="unsubscribe" onclick="location.href='/unsubscribe'">
+                Yes, I'm sure
+            </button>
+        </div>
+    </div>
+</body>
+
+</html>
