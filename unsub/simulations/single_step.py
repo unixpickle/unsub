@@ -40,6 +40,12 @@ class SingleStepSimulation:
                     parent._status = "failure"
                     return os.path.join(asset_root, "staysubscribed.html")
 
+                if path in ("/updated_failure", "/updated_success"):
+                    parent._status = (
+                        "failure" if path == "/updated_failure" else "success"
+                    )
+                    return os.path.join(asset_root, "updated.html")
+
                 # Normalize and sandbox
                 rel_path = path.lstrip("/")
                 safe_path = os.path.normpath(os.path.join(asset_root, rel_path))

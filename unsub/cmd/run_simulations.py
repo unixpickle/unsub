@@ -19,6 +19,7 @@ def main():
     parser.add_argument(
         "--output-dir", type=str, default=f"simulations/{int(time.time())}"
     )
+    parser.add_argument("--user_email", type=str, default="annabelle.lee@gmail.com")
     parser.add_argument("--runs", type=int, default=4)
     args = parser.parse_args()
 
@@ -43,7 +44,9 @@ def main():
         for trial_idx in range(args.runs):
             sim = sim_fn()
             url = sim.start()
-            status, conversation = unsubscribe_on_website(openai_client, browser, url)
+            status, conversation = unsubscribe_on_website(
+                openai_client, browser, url, args.user_email
+            )
             actual_status = sim.finish()
             print(
                 f" * trial {trial_idx}: agent_status={status} simulation_status={actual_status} "

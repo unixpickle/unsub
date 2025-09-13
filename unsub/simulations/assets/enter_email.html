@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Unsubscribe from Communications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin: 1rem 0;
+            text-align: left;
+        }
+
+        input[type="email"] {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            margin-top: 0.4rem;
+        }
+
+        .checkbox-group {
+            margin-top: 1rem;
+        }
+
+        .checkbox-group label {
+            display: block;
+            margin: 0.3rem 0;
+        }
+
+        button {
+            margin-top: 1.5rem;
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            background-color: #007BFF;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Unsubscribe Preferences</h2>
+        <form id="unsubscribeForm">
+            <div class="form-group">
+                <label for="email">Enter your email address:</label>
+                <input type="email" id="email" name="email" required placeholder="you@example.com">
+            </div>
+
+            <div class="form-group checkbox-group">
+                <p>Remain subscribed to:</p>
+                <label><input type="checkbox" name="subscriptions" value="marketing" checked> Marketing emails</label>
+                <label><input type="checkbox" name="subscriptions" value="updates" checked> Product updates</label>
+                <label><input type="checkbox" name="subscriptions" value="community" checked> Community
+                    newsletters</label>
+            </div>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <script src="/enter_email.js"></script>
+</body>
+
+</html>

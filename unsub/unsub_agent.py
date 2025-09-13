@@ -21,6 +21,7 @@ def unsubscribe_on_website(
     client: OpenAI,
     driver: WebDriver,
     url: str,
+    user_email: str,
     max_steps: int = 10,
     max_output_len: int = 512,
 ) -> tuple[Literal["success", "failure", "timeout"], list[ChatMessage]]:
@@ -54,7 +55,8 @@ def unsubscribe_on_website(
             "To get more information from the page, you can use a new print() function, which will "
             "convert its argument to string and I will send the outputs of all prints in the next "
             "message so that you can iterate. After every message you send, I will give you a new "
-            "screenshot of the page, and any output from print() calls."
+            "screenshot of the page, and any output from print() calls. "
+            f"The user's email address is: {user_email}"
         )
         conversation.append(
             {
