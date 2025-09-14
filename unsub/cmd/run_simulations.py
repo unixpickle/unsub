@@ -21,6 +21,7 @@ def main():
     )
     parser.add_argument("--user_email", type=str, default="annabelle.lee@gmail.com")
     parser.add_argument("--runs", type=int, default=4)
+    parser.add_argument("--verbose", action="store_true")
     args = parser.parse_args()
 
     os.makedirs(args.output_dir, exist_ok=True)
@@ -45,7 +46,11 @@ def main():
             sim = sim_fn()
             url = sim.start()
             status, conversation = unsubscribe_on_website(
-                openai_client, browser, url, args.user_email
+                openai_client,
+                browser,
+                url,
+                args.user_email,
+                verbose=args.verbose,
             )
             actual_status = sim.finish()
             print(

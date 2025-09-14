@@ -23,7 +23,8 @@ def unsubscribe_on_website(
     url: str,
     user_email: str,
     max_steps: int = 10,
-    max_output_len: int = 512,
+    max_output_len: int = 2048,
+    verbose: bool = False,
 ) -> tuple[Literal["success", "failure", "timeout"], list[ChatMessage]]:
     driver.get(url)
 
@@ -43,20 +44,21 @@ def unsubscribe_on_website(
                 previous_output += (
                     f"\n... output truncated at {max_output_len} chars ...\n"
                 )
+            if verbose:
+                print("previous output:", previous_output)
             msg = f"Output from previous code:\n```\n{previous_output}\n```\n\n"
         msg += (
             "Below is a screenshot of a webpage from an email Unsubscribe link. "
             "Your goal is to figure out how to run JavaScript on the page to make sure the user is "
-            "unsubscribed from this source of spam. You may think out loud in your response, but "
-            "end the response with a code block to execute on the page. "
-            "If the page already says that the user has been unsubscribed from all emails, then "
-            "output the code success(). If the page does not seem to have anything to do "
-            "with unsubscribing, or you do not know what to do, then output the code `failure()`. "
-            "To get more information from the page, you can use a new print() function, which will "
-            "convert its argument to string and I will send the outputs of all prints in the next "
-            "message so that you can iterate. After every message you send, I will give you a new "
-            "screenshot of the page, and any output from print() calls. "
-            f"The user's email address is: {user_email}"
+            "unsubscribed from this source of spam and any other sources that this vendor might send.\n\n"
+            " * You may think out loud in your response, but end the response with a code block to execute on the page.\n"
+            " * If the page already says that the user has been unsubscribed from all emails, then output the code success().\n"
+            " * If the page does not seem to have anything to do with unsubscribing, or you do not know what to do, then output the code failure().\n"
+            " * To get more information from the page, you can use a new print() function, which will call toString() on its argument. I will send the outputs of all prints in the next message to allow iteration.\n"
+            " * After every message you send, I will give you a new screenshot of the page, and any output from print() calls.\n"
+            " * The output of print() will be truncated, so the page might have too much code to print on it.\n"
+            " * Sometimes a <button> or <input> looks like a link. You can't assume an <a> tag just because something looks like a link.\n"
+            f" * The user's email address is: {user_email}"
         )
         conversation.append(
             {
@@ -102,9 +104,14 @@ def unsubscribe_on_website(
             """
         )
 
+        if verbose:
+            print("response:", response)
+
         code_to_run = matches[0].strip()
         try:
             driver.execute_script(code_to_run)
+        except KeyboardInterrupt:
+            raise
         except Exception as e:
             previous_output = f"ERROR while executing script: {e}"
             continue
@@ -112,7 +119,13 @@ def unsubscribe_on_website(
         previous_output = driver.execute_script("return window.logMessages")
         status = driver.execute_script("return window.unspamStatus")
 
+        if verbose:
+            print("status:", status)
+
         if status:
             return status, conversation
+
+        if verbose:
+            print("-" * 50)
 
     return "timeout", conversation

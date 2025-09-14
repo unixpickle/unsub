@@ -36,6 +36,8 @@ def completion(client: OpenAI, instructions: str, input: Any) -> str:
             instructions=instructions,
             input=input,
         )
+    except KeyboardInterrupt:
+        raise
     except Exception as exc:
         raise CompletionError("API call failed") from exc
     if err := response.error:
