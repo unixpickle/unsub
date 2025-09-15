@@ -1,10 +1,12 @@
 import re
+from base64 import b64encode
+from io import BytesIO
 from typing import Literal
 
 from openai import OpenAI
+from PIL import Image, ImageChops
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
-from selenium.webdriver.common.by import By
 
 from .api_util import ChatMessage, ChatMessageContentImage, completion
 
@@ -31,12 +33,31 @@ def unsubscribe_on_website(
     conversation: list[ChatMessage] = []
     previous_output = None
 
-    for _ in range(max_steps):
-        screenshot = driver.get_screenshot_as_base64()
-        image_content: ChatMessageContentImage = {
+    previous_image: Image.Image | None = None
+
+    for turn in range(max_steps):
+        # Get raw PNG bytes
+        png_bytes = driver.get_screenshot_as_png()
+
+        # Make PIL Image
+        image = Image.open(BytesIO(png_bytes))
+
+        # Compare with previous screenshot
+        if previous_image is not None:
+            diff = ImageChops.difference(image, previous_image)
+            identical_to_prev = not diff.getbbox()  # None if no difference
+        else:
+            identical_to_prev = False
+
+        previous_image = image
+
+        b64_data = b64encode(png_bytes).decode("ascii")
+        data_url = f"data:image/png;base64,{b64_data}"
+        image_content: ChatMessageContentImage | None = {
             "type": "input_image",
-            "image_url": f"data:image/png;base64,{screenshot}",
+            "image_url": data_url,
         }
+
         msg = ""
         if previous_output:
             if len(previous_output) > max_output_len:
@@ -45,10 +66,32 @@ def unsubscribe_on_website(
                     f"\n... output truncated at {max_output_len} chars ...\n"
                 )
             if verbose:
-                print("previous output:", previous_output)
-            msg = f"Output from previous code:\n```\n{previous_output}\n```\n\n"
-        msg += (
-            "Below is a screenshot of a webpage from an email Unsubscribe link. "
+                print("[PREVIOUS OUTPUT]")
+                print(previous_output)
+            msg += f"Output from previous code:\n```\n{previous_output}\n```\n\n"
+        elif turn:
+            if verbose:
+                print("[NO PREVIOUS OUTPUT]")
+            msg += "There was no print() output from previous code.\n\n"
+        if verbose:
+            print("-" * 50)
+
+        if identical_to_prev:
+            msg += "The screenshot has not changed from the previous message.\n\n"
+        else:
+            msg += "Below is a screenshot of a webpage from the email Unsubscribe link.\n\n"
+
+        conversation.append(
+            {
+                "role": "user",
+                "content": [
+                    {"type": "input_text", "text": msg},
+                    image_content,
+                ],
+            }
+        )
+
+        instructions = (
             "Your goal is to figure out how to run JavaScript on the page to make sure the user is "
             "unsubscribed from this source of spam and any other sources that this vendor might send.\n\n"
             " * You may think out loud in your response, but end the response with a code block to execute on the page.\n"
@@ -60,18 +103,10 @@ def unsubscribe_on_website(
             " * Sometimes a <button> or <input> looks like a link. You can't assume an <a> tag just because something looks like a link.\n"
             f" * The user's email address is: {user_email}"
         )
-        conversation.append(
-            {
-                "role": "user",
-                "content": [
-                    {"type": "input_text", "text": msg},
-                    image_content,
-                ],
-            }
-        )
+
         response = completion(
             client,
-            instructions="You are an agent which executes JavaScript to control webpages.",
+            instructions=instructions,
             input=conversation,
         )
         conversation.append(
@@ -105,7 +140,9 @@ def unsubscribe_on_website(
         )
 
         if verbose:
-            print("response:", response)
+            print("[RESPONSE]")
+            print(response)
+            print("-" * 50)
 
         code_to_run = matches[0].strip()
         try:
@@ -120,7 +157,7 @@ def unsubscribe_on_website(
         status = driver.execute_script("return window.unspamStatus")
 
         if verbose:
-            print("status:", status)
+            print("[STATUS]:", status)
 
         if status:
             return status, conversation

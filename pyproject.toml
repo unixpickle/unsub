@@ -11,4 +11,8 @@ dependencies = [
     "beautifulsoup4",
     "openai",
     "selenium",
+    "Pillow",
 ]
+
+[tool.setuptools]
+packages = ["unsub"]
