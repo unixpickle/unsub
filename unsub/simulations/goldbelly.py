@@ -2,16 +2,17 @@ import os
 import socket
 import threading
 from http.server import HTTPServer
+from urllib.parse import parse_qs
 
 from .base import AssetDir, BaseHandler, UnsubStatus
 
 
-class StaticSimulation:
-    def __init__(self, index_page: str):
-        self.index_page = index_page
+class GoldbellySimulation:
+    def __init__(self):
         self.httpd: HTTPServer | None = None
         self.thread: threading.Thread | None = None
         self.port: int | None = None
+        self._status: UnsubStatus = "failure"
 
     def start(self) -> str:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,23 +20,40 @@ class StaticSimulation:
         self.port = sock.getsockname()[1]
         sock.close()
 
-        index_page = self.index_page
         asset_root = os.path.abspath(AssetDir)
+        parent = self
 
         class CustomHandler(BaseHandler):
             def translate_path(self, path: str) -> str:
                 # Remove query/fragment
-                path = path.split("?", 1)[0].split("#", 1)[0]
+                path = path.split("#")[0]
+                if len(parts := path.split("?")) > 1:
+                    path = parts[0]
+                    query = parse_qs(parts[1])
+                else:
+                    query = {}
 
                 if path == "/":
-                    return os.path.join(asset_root, index_page)
+                    return os.path.join(asset_root, "goldbelly", "index.html")
 
-                # Normalize and sandbox
+                if path == "/email_preferences":
+                    parent._status = (
+                        "success"
+                        if query["user[unsubscribed]"] == ["true"]
+                        else "failure"
+                    )
+                    return os.path.join(asset_root, "updated.html")
+
+                if path == "/homepage":
+                    parent._status = "failure"
+                    return os.path.join(asset_root, "goldbelly", "homepage.html")
+
                 rel_path = path.lstrip("/")
-                safe_path = os.path.normpath(os.path.join(asset_root, rel_path))
+                safe_path = os.path.normpath(
+                    os.path.join(asset_root, "goldbelly", rel_path)
+                )
 
-                # Ensure final path stays inside asset_root
-                if not safe_path.startswith(asset_root + "/"):
+                if not safe_path.startswith(asset_root + os.sep):
                     return os.path.join(asset_root, "404.html")
 
                 return safe_path
@@ -57,4 +75,6 @@ class StaticSimulation:
             self.httpd.shutdown()
             self.httpd.server_close()
             self.thread.join(timeout=1)
-        return "success"
+
+        # Default to "success" only if unsub was reached
+        return self._status

@@ -1,7 +1,5 @@
 import os
-import socket
-import threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler
 from typing import Literal, Protocol
 
 UnsubStatus = Literal["success", "failure"]
@@ -16,3 +14,21 @@ class Simulation(Protocol):
     def finish(self) -> UnsubStatus:
         """Start the simulation and return a URL."""
         ...
+
+
+class BaseHandler(SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        # Silence logs
+        pass
+
+    def end_headers(self):
+        # Prevent shutdown / server_close from hanging.
+        self.send_header("Connection", "close")
+        super().end_headers()
+
+    def setup(self):
+        super().setup()
+        try:
+            self.request.settimeout(2)  # avoid open sockets preventing shutdown
+        except Exception:
+            pass

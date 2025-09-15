@@ -1,9 +1,9 @@
 import os
 import socket
 import threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import HTTPServer
 
-from .base import AssetDir, UnsubStatus
+from .base import AssetDir, BaseHandler, UnsubStatus
 
 
 class SingleStepSimulation:
@@ -24,7 +24,7 @@ class SingleStepSimulation:
         asset_root = os.path.abspath(AssetDir)
         parent = self
 
-        class CustomHandler(SimpleHTTPRequestHandler):
+        class CustomHandler(BaseHandler):
             def translate_path(self, path: str) -> str:
                 # Remove query/fragment
                 path = path.split("?", 1)[0].split("#", 1)[0]
@@ -55,21 +55,6 @@ class SingleStepSimulation:
                     return os.path.join(asset_root, "404.html")
 
                 return safe_path
-
-            def log_message(self, format, *args):
-                pass  # silence logs
-
-            def end_headers(self):
-                # Prevent shutdown / server_close from hanging.
-                self.send_header("Connection", "close")
-                super().end_headers()
-
-            def setup(self):
-                super().setup()
-                try:
-                    self.request.settimeout(2)  # seconds
-                except Exception:
-                    pass
 
         self.httpd = HTTPServer(("127.0.0.1", self.port), CustomHandler)  # type: ignore
 
