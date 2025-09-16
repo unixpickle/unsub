@@ -1,4 +1,5 @@
 import re
+import textwrap
 from base64 import b64encode
 from io import BytesIO
 from typing import Literal
@@ -90,20 +91,23 @@ def unsubscribe_on_website(
                 ],
             }
         )
+        instructions = textwrap.dedent(
+            f"""\
+            Your goal is to figure out how to run JavaScript on the page to make sure the user is
+            unsubscribed from this source of spam and any other sources that this vendor might send.
 
-        instructions = (
-            "Your goal is to figure out how to run JavaScript on the page to make sure the user is "
-            "unsubscribed from this source of spam and any other sources that this vendor might send.\n\n"
-            " * You may think out loud in your response, but end the response with a code block to execute on the page.\n"
-            " * If the page already says that the user has been unsubscribed from all emails, then output the code success().\n"
-            " * If the page does not seem to have anything to do with unsubscribing, or you do not know what to do, then output the code failure().\n"
-            " * To get more information from the page, you can use a new print() function, which will call toString() on its argument. I will send the outputs of all prints in the next message to allow iteration.\n"
-            " * After every message you send, I will give you a new screenshot of the page, and any output from print() calls.\n"
-            " * The output of print() will be truncated, so the page might have too much code to print on it.\n"
-            " * Sometimes a <button> or <input> looks like a link. You can't assume an <a> tag just because something looks like a link.\n"
-            f" * The user's email address is: {user_email}"
+            * You may think out loud in your response, but end the response with a code block to execute on the page.
+            * If the page already says that the user has been unsubscribed from ALL emails, then output the code success().
+            * If the page does not seem to have anything to do with unsubscribing, or you do not know what to do, then output the code failure().
+            * Do not output success() prematurely; make sure you see the latest page first.
+            * To get more information from the page, you can use the provided print() function, which will call toString() on its argument. I will send the outputs of all prints in the next message to allow iteration.
+            * After every message you send, I will give you a new screenshot of the page (if it has changed), and any output from print() calls.
+            * The output of print() will be truncated, so the page might have too much code to print directly in one call.
+            * I have provided an extra clickText() function which finds elements that contain the given text and clicks them all. It returns true if a click was performed, false otherwise.
+            * I have provided an extra scrollDown() function which scrolls down the page further (if it's a long page) so that you can see more content.
+            * The user's email address is: {user_email}
+        """
         )
-
         response = completion(
             client,
             instructions=instructions,
@@ -135,6 +139,50 @@ def unsubscribe_on_website(
             }
             window.success = () => {
                 window.unspamStatus = 'success';
+            }
+            window.scrollDown = () => { window.scrollBy(0, 500); }
+            window.clickText = (targetText) => {
+                const all = document.querySelectorAll("*");
+                let matches = [];
+
+                for (const el of all) {
+                    // Get candidate label: textContent for most elements, value for inputs/buttons
+                    let label = "";
+                    if (el.tagName === "INPUT" || el.tagName === "BUTTON") {
+                        if (el.value) label = el.value;
+                    }
+                    if (!label && el.textContent) {
+                        label = el.textContent;
+                    }
+
+                    if (label && label.includes(targetText)) {
+                        // Prioritize leaf nodes, but also allow input elements (which are leaves anyway)
+                        if (el.children.length === 0 || el.tagName === "INPUT" || el.tagName === "BUTTON") {
+                            matches.push(el);
+                        }
+                    }
+                }
+
+                // Fallback: if no leaf/input/button matches found, allow any match
+                if (matches.length === 0) {
+                    for (const el of all) {
+                        let label = el.value || el.textContent;
+                        if (label && label.includes(targetText)) {
+                            matches.push(el);
+                        }
+                    }
+                }
+
+                let found = false;
+                for (const el of matches) {
+                    const style = window.getComputedStyle(el);
+                    if (style.visibility !== "hidden" && style.display !== "none") {
+                        el.click();
+                        found = true;
+                    }
+                }
+
+                return found;
             }
             """
         )

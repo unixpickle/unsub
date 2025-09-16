@@ -1,0 +1,330 @@
+@font-face {
+  font-family: "Honeywell Sans";
+  src: url("../../fonts/HoneywellSans-Book.eot");
+  src: url("../../fonts/HoneywellSans-Book.eot.eot?#iefix") format('embedded-opentype'),
+    url("../../fonts/HoneywellSans-Book.woff") format("woff"),
+    url("../../fonts/HoneywellSans-Book.woff2") format("woff2"),
+    url("../../fonts/HoneywellSans-Book.ttf") format("truetype"),
+    url("../../fonts/HoneywellSans-Book.svg") format("svg");
+  font-weight: normal;
+}
+@font-face {
+  font-family: "Honeywell Sans";
+  src: url("../../fonts/HoneywellSans-Bold.eot");
+  src: url("../../fonts/HoneywellSans-Bold.eot.eot?#iefix") format('embedded-opentype'),
+    url("../../fonts/HoneywellSans-Bold.woff") format("woff"),
+    url("../../fonts/HoneywellSans-Bold.woff2") format("woff2"),
+    url("../../fonts/HoneywellSans-Bold.ttf") format("truetype"),
+    url("../../fonts/HoneywellSans-Bold.svg") format("svg");
+  font-weight: bold;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html {
+  font-size: 16px;
+}
+#container {
+  width: 100%;
+  background-color: #FFFFFF;
+  margin: auto;
+}
+#innerContainer {
+  max-width: 900px;
+  margin: auto;
+}
+#Honeywell_logo {
+  width: 194px;
+  height: 24px;
+  padding-top: 45px;
+  text-align: left;
+}
+#Resideo_logo {
+  width: 194px;
+  height: 24px;
+  padding-top: 45px;
+  text-align: left;
+}
+#form_area {
+  width: 100%;
+  background-color: #ededed;
+  position: relative;
+}
+.form-top {
+  padding: 60px 60px 20px;
+}
+.form-bottom {
+  padding: 0px 60px 60px;
+}
+#headline {
+  font-family: 'Honeywell Sans', sans-serif;
+  color: #333333;
+  font-weight: bold;
+  text-align: center;
+  font-size: 2.8125em;
+  letter-spacing: .25px;
+  padding: 70px 0px 0px 0px;
+}
+#rollover {
+  margin-top: 45px;
+  width: 100%;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+}
+#rollover_question {
+  text-align: right;
+  vertical-align: top;
+  padding: 5px 0 0 15px;
+}
+#rollover_question_h2, #form_area h2 {
+  font-family: 'Honeywell Sans', sans-serif;
+  font-weight: bold;
+  color: #000000;
+  font-size: 1.875em;
+  letter-spacing: .25px;
+  padding-bottom: 0;
+  margin-bottom: 1em;
+  vertical-align: top;
+}
+
+/* TOOLTIP */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 264px;
+  background-color: #FFFFFF;
+  color: #333333;
+  font-size: 1em;
+  line-height: 1.4em;
+  font-family: 'Honeywell Sans', sans-serif;
+  text-align: left;
+  letter-spacing: .25px;
+  border: 1px solid #333;
+  padding: 20px 30px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -234px;
+}
+.tooltip .tooltiptext a {
+  color: #4076B8;
+  font-size: .875em;
+  font-weight: bold;
+  text-decoration: none;
+}
+.tooltip .tooltiptext:before {
+  content: "";
+  width: 0;
+  height: 0;
+  position: absolute;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #333;
+  border-bottom: 10px solid transparent;
+  right: 7%;
+  bottom: -20px;
+}
+.tooltip .tooltiptext:after {
+  content: "";
+  width: 0px;
+  height: 0px;
+  position: absolute;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 10px solid #fff;
+  border-bottom: 10px solid transparent;
+  right: 7%;
+  bottom: -19px;
+}
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+
+#form_area h2 {
+  margin-top: 40px;
+}
+#form_area h2:first-of-type {
+  margin-top: 0px;
+}
+#bodyCopy p {
+  font-family: 'Honeywell Sans', sans-serif;
+  font-weight: 400;
+  color: #333;
+  font-size: 1.1875em;
+  line-height: 1.78125em;
+  margin-bottom: 1em;
+  letter-spacing: .25px;
+}
+#bodyCopy .smalltype {
+  font-size: 0.875em;
+  line-height: 1.375em;
+  padding-top: 6px;
+  padding-bottom: 40px;
+}
+label {
+  font-family: 'Honeywell Sans', sans-serif;
+  font-weight: 400;
+  font-size: 1em;
+  line-height: 1.5em;
+  letter-spacing: .25px;
+}
+/* Customize the label (the container) */
+.checkbox-label {
+  display: block;
+  position: relative;
+  padding-left: 40px;
+  margin-left: 40px;
+  margin-bottom: 30px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default checkbox */
+.checkbox-label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+/* Create a custom checkbox */
+.checkmark {
+  position: absolute;
+  top: 3px;
+  left: 0;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+  outline: 1px solid #999;
+  border: 4px solid #fff;
+}
+/* On mouse-over, add a grey background color */
+.checkbox-label:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+/* When the checkbox is checked, add a blue background */
+.checkbox-label input:checked ~ .checkmark {
+  background-color: #337ab7;
+}
+
+.submit-button {
+  text-align: right
+}
+.hr {
+  padding-left: 42px;
+  padding-right: 42px;
+  border-bottom: 2px solid white;
+  margin: 40px 0 0px;
+}
+.topMargin0 {
+  margin-top: 0;
+}
+input[type=submit] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #4076b8;
+  border: none;
+  color: #FFFFFF;
+  width: 170px;
+  height: 50px;
+  border-radius: 0;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-family: 'Honeywell Sans', sans-serif;
+  font-size: .875em;
+  font-weight: bold;
+  margin-top: 60px;
+  letter-spacing: .25px;
+}
+#error {
+  background-color: #EDEDED;
+  border: thin #fff solid;
+  color: #FFF;
+}
+#footer {
+  margin-top: 40px;
+  margin-bottom: 40px;
+  display: -webkit-flex;
+  display: flex;
+}
+#footer_question {
+  padding-right: 15px;
+}
+#footer_question_p {
+  font-family: 'Honeywell Sans', sans-serif;
+  font-size: 1em;
+  line-height: 1.5em;
+  color: #333333;
+  vertical-align: top;
+}
+#footer_question_p a {
+  text-decoration:none;
+  color: #4076B8;
+  font-size: 0.875em;
+  font-weight: bold;
+}
+.success {
+  background-color: #4076b8;
+  padding: 50px;
+}
+.error {
+  background-color: #ee3124;
+  padding: 50px;
+}
+.success p, .error p {
+  font-family: 'Honeywell Sans', sans-serif;
+  color: #fff;
+  font-size: 1.1875em;
+  line-height: 1.78125em;
+  text-align: center;
+  letter-spacing: .25px;
+}
+.error p:last-of-type {
+  font-size: 1em;
+}
+.reload_prefs {
+  color: white;
+}
+@media only screen and (max-width: 900px) {
+  #header, #footer {
+    padding-left: 30px;
+    padding-right: 30px;
+  }
+}
+@media only screen and (max-width: 414px) {
+  .form-top {
+    padding: 30px 30px 20px;
+  }
+  .form-bottom {
+    padding: 0px 30px 30px;
+  }
+  .checkbox-label {
+    margin-left: 0px;
+  }
+  input[type=submit] {
+    margin-top: 30px;
+  }
+  .success, .error {
+    padding: 30px;
+  }
+  #rollover_question_h2, #form_area h2 {
+    font-size: 1.625em;
+  }
+}
+@media only screen and (max-width: 375px) {
+  #headline {
+    font-size: 2.25em;
+  }
+}
