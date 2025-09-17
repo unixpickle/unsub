@@ -1,5 +1,6 @@
 import re
 import textwrap
+import time
 from base64 import b64encode
 from io import BytesIO
 from typing import Literal
@@ -27,6 +28,7 @@ def unsubscribe_on_website(
     user_email: str,
     max_steps: int = 10,
     max_output_len: int = 2048,
+    wait_between_turns: float = 2.0,
     verbose: bool = False,
 ) -> tuple[Literal["success", "failure", "timeout"], list[ChatMessage]]:
     driver.get(url)
@@ -79,18 +81,24 @@ def unsubscribe_on_website(
 
         if identical_to_prev:
             msg += "The screenshot has not changed from the previous message.\n\n"
+            conversation.append(
+                {
+                    "role": "user",
+                    "content": msg.strip(),
+                }
+            )
         else:
             msg += "Below is a screenshot of a webpage from the email Unsubscribe link.\n\n"
+            conversation.append(
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "input_text", "text": msg.strip()},
+                        image_content,
+                    ],
+                }
+            )
 
-        conversation.append(
-            {
-                "role": "user",
-                "content": [
-                    {"type": "input_text", "text": msg},
-                    image_content,
-                ],
-            }
-        )
         instructions = textwrap.dedent(
             f"""\
             Your goal is to figure out how to run JavaScript on the page to make sure the user is
@@ -212,5 +220,9 @@ def unsubscribe_on_website(
 
         if verbose:
             print("-" * 50)
+        time.sleep(wait_between_turns)
+
+        # If a new window/tab was opened, we want to show it to the agent.
+        driver.switch_to.window(driver.window_handles[-1])
 
     return "timeout", conversation
