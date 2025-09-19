@@ -1,0 +1,521 @@
+<!-- this was recreated from a screenshot by GPT-5 -->
+
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Account - Email Preferences</title>
+    <style>
+        :root {
+            --bg: #0f141a;
+            /* page background */
+            --panel: #171e26;
+            /* cards/panels */
+            --panel-2: #111821;
+            /* darker panel */
+            --line: #263242;
+            /* borders */
+            --muted: #9fb0c0;
+            /* secondary text */
+            --text: #e8edf2;
+            /* primary text */
+            --accent: #ff6a00;
+            /* fandango-ish orange */
+            --accent-2: #ff812b;
+            /* lighter orange */
+            --brand-blue: #1a2533;
+            /* header bar */
+            --nav: #151b22;
+            /* top nav row */
+            --banner-red-1: #571214;
+            /* curtain banner */
+            --banner-red-2: #2a0b0c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .wrap {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* --- promo / ad bar (placeholder) --- */
+        .top-ad {
+            background: #212733;
+            color: #cdd6df;
+        }
+
+        .top-ad .wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .top-ad .pill {
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #2c3545;
+            border: 1px solid #394558;
+            font-weight: 600;
+        }
+
+        /* --- main header with brand + search + quick links --- */
+        header {
+            background: var(--brand-blue);
+            border-bottom: 1px solid #243142;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        header .row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            letter-spacing: .2px;
+        }
+
+        .brand .logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            display: grid;
+            place-items: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: 18px;
+            box-shadow: 0 4px 14px rgba(255, 106, 0, .22);
+        }
+
+        .brand span {
+            font-size: 22px;
+        }
+
+        .search {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            overflow: hidden;
+            background: #0e1620;
+        }
+
+        .search input {
+            flex: 1;
+            background: transparent;
+            border: 0;
+            outline: none;
+            color: var(--text);
+            padding: 12px 14px;
+            font-size: 14px;
+        }
+
+        .search button {
+            border: 0;
+            background: transparent;
+            color: #9bb0c4;
+            padding: 10px 14px;
+            cursor: pointer;
+        }
+
+        .quick {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            font-size: 14px;
+        }
+
+        .quick a {
+            color: #d8e0ea;
+            opacity: .9;
+        }
+
+        /* --- section nav (Movies, Theaters...) --- */
+        .topnav {
+            background: var(--nav);
+            border-top: 1px solid #1f2a34;
+            border-bottom: 1px solid #1f2a34;
+        }
+
+        .topnav .wrap {
+            padding: 10px 20px;
+            display: flex;
+            gap: 26px;
+            overflow-x: auto;
+        }
+
+        .topnav a {
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: .12em;
+            color: #d0d7e0;
+            white-space: nowrap;
+        }
+
+        .topnav a b {
+            font-weight: 800;
+        }
+
+        /* --- big banner "MY ACCOUNT" --- */
+        .banner {
+            background: linear-gradient(180deg, var(--banner-red-1), var(--banner-red-2));
+            border-bottom: 1px solid #1a0b0c;
+        }
+
+        .banner .wrap {
+            padding: 26px 20px;
+        }
+
+        .banner h1 {
+            margin: 0;
+            font-size: 36px;
+            letter-spacing: .5px;
+        }
+
+        /* --- subnav inside account --- */
+        .account-nav {
+            background: linear-gradient(180deg, rgba(0, 0, 0, .15), rgba(0, 0, 0, .0));
+            border-bottom: 1px solid #202a34;
+        }
+
+        .account-nav .wrap {
+            display: flex;
+            gap: 24px;
+            padding: 10px 20px;
+            overflow-x: auto;
+        }
+
+        .account-nav a {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: #e6ebf2;
+            opacity: .8;
+        }
+
+        .account-nav a.active {
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 8px;
+            opacity: 1;
+        }
+
+        /* --- main content --- */
+        main .wrap {
+            padding: 28px 20px 64px;
+        }
+
+        h2 {
+            font-size: 18px;
+            margin: 0 0 6px;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .sub {
+            color: var(--muted);
+            margin: 0 0 22px;
+        }
+
+        .card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 22px;
+        }
+
+        .options {
+            display: grid;
+            gap: 16px;
+            margin: 8px 0 18px;
+        }
+
+        .option {
+            display: grid;
+            grid-template-columns: 28px 1fr;
+            gap: 14px;
+            align-items: start;
+            background: var(--panel-2);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-top: 2px;
+            accent-color: var(--accent);
+        }
+
+        .option h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .option p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.35;
+        }
+
+        .disclaimer {
+            margin: 14px 0 0;
+            padding: 12px 14px;
+            font-size: 13px;
+            color: #b1c0cf;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #111a23;
+        }
+
+        .actions {
+            display: flex;
+            gap: 14px;
+            margin-top: 18px;
+        }
+
+        .btn {
+            border: 0;
+            cursor: pointer;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-weight: 800;
+            letter-spacing: .02em;
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 8px 18px rgba(255, 106, 0, .22);
+        }
+
+        .btn.primary:hover {
+            filter: brightness(1.06);
+        }
+
+        .btn.ghost {
+            background: transparent;
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+        .unsubscribe-block {
+            margin-top: 30px;
+            border-top: 1px solid var(--line);
+            padding-top: 24px;
+        }
+
+        .unsubscribe-block h4 {
+            margin: 0 0 8px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            color: #9db0c2;
+        }
+
+        .unsubscribe-block h3 {
+            margin: 0 0 8px;
+        }
+
+        .unsubscribe-block p {
+            margin: 0 0 12px;
+            color: var(--muted);
+        }
+
+        footer {
+            color: #8796a7;
+            font-size: 12px;
+            padding: 38px 20px;
+            text-align: center;
+        }
+
+        /* responsive tweaks */
+        @media (max-width: 760px) {
+            .banner h1 {
+                font-size: 28px;
+            }
+
+            header .row {
+                gap: 12px;
+            }
+
+            .quick {
+                display: none;
+            }
+
+            .actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Top promo/ad placeholder -->
+    <div class="top-ad">
+        <div class="wrap">
+            <span class="pill">Student Exclusive</span>
+            <span>Get a delivery perk – placeholder banner</span>
+        </div>
+    </div>
+
+    <header>
+        <div class="wrap row">
+            <a class="brand" href="/homepage">
+                <span class="logo">F</span>
+                <span>FANDANGO</span>
+            </a>
+
+            <form class="search" role="search" aria-label="Search movies" action="/homepage" method="get">
+                <input placeholder="Search by city, state, zip or movie" aria-label="Search" />
+                <button type="submit" title="Search">🔍</button>
+            </form>
+
+            <nav class="quick" aria-label="Quick links">
+                <a href="/homepage">Movies</a>
+                <a href="/homepage">Theaters</a>
+                <a href="/homepage">At Home</a>
+                <a href="/homepage">Movie News</a>
+                <a href="/homepage">Sign In/Join</a>
+            </nav>
+        </div>
+    </header>
+
+    <div class="topnav">
+        <div class="wrap">
+            <a href="/homepage"><b>Movies</b></a>
+            <a href="/homepage">Theaters</a>
+            <a href="/homepage">At Home</a>
+            <a href="/homepage">Movie News</a>
+            <a href="/homepage">Gift Cards</a>
+            <a href="/homepage">Offers</a>
+        </div>
+    </div>
+
+    <section class="banner">
+        <div class="wrap">
+            <h1>MY ACCOUNT</h1>
+        </div>
+    </section>
+
+    <nav class="account-nav">
+        <div class="wrap">
+            <a href="/homepage">Dashboard</a>
+            <a href="/homepage">FanRewards Points</a>
+            <a href="/homepage">Purchase History</a>
+            <a href="/homepage">Account Settings</a>
+            <a class="active" href="/">Email + Preferences</a>
+            <a href="/homepage">Theater Rewards</a>
+            <a href="/homepage">Sign Out</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="wrap">
+            <div class="card">
+                <form action="/update_preferences" method="get">
+                    <h2>Fandango Media Brands Email Preference Center</h2>
+                    <p class="sub">Get updates on all things movies, entertainment, and more straight to your inbox
+                        from:
+                    </p>
+
+                    <div class="options">
+                        <label class="option">
+                            <input type="checkbox" name="sub1" value="1" checked />
+                            <div>
+                                <h3>Fandango</h3>
+                                <p>The ultimate destination for movie tickets, theater showtimes, trailers, and
+                                    interviews.
+                                </p>
+                            </div>
+                        </label>
+
+                        <label class="option">
+                            <input type="checkbox" name="sub2" value="1" checked />
+                            <div>
+                                <h3>Fandango at Home</h3>
+                                <p>Buy, rent, or watch free movies on your favorite devices — at home or on the go —
+                                    without
+                                    subscription fees.</p>
+                            </div>
+                        </label>
+
+                        <label class="option">
+                            <input type="checkbox" name="sub3" value="1" checked />
+                            <div>
+                                <h3>Rotten Tomatoes</h3>
+                                <p>The world's most trusted source of movie and TV recommendations and reviews.</p>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="disclaimer">
+                        I understand and agree that by clicking the email customization option(s) above and clicking
+                        “SAVE
+                        PREFERENCES”, I agree to receive occasional email communications and consent to Fandango's
+                        Privacy
+                        Policy and Terms and Policies. Please allow 10 business days for your account to reflect your
+                        preferences.
+                    </div>
+
+                    <div class="actions">
+                        <input class="btn primary" type="submit" value="Save Preferences">
+                        <a class="btn ghost" href="/homepage">Cancel</a>
+                    </div>
+
+                    <div class="unsubscribe-block">
+                        <h4>Unsubscribe From All</h4>
+                        <h3>Unsubscribe From All</h3>
+                        <p>Even if you choose not to receive any marketing emails, you will still receive our
+                            transactional
+                            emails such as email verifications and information about your account, purchases, and
+                            rentals.
+                            Please allow 10 business days for your account to reflect your preferences.</p>
+                        <a class="btn ghost" href="/unsubscribe_all">Unsubscribe From All</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        This is a fan‑made static mockup for demonstration purposes.
+    </footer>
+</body>
+
+</html>

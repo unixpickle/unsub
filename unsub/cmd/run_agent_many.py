@@ -19,12 +19,13 @@ def main():
     parser.add_argument("--user_email", type=str, required=True)
     parser.add_argument("--log_path", type=str, required=True)
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--headless", action="store_true")
     args = parser.parse_args()
 
     os.makedirs(args.log_path, exist_ok=True)
 
     openai_client = OpenAI()
-    browser = create_driver()
+    browser = create_driver(headless=args.headless)
 
     for path in glob.glob(os.path.join(args.email_dir, "*", "*.json")):
         with open(path, "r") as f:
@@ -58,6 +59,8 @@ def main():
             raise
         except:
             result["error"] = traceback.format_exc()
+
+        print(" - done with status:", result.get("status"))
 
         with open(out_path, "w") as f:
             json.dump(result, f)

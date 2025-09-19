@@ -3,6 +3,7 @@ import socket
 import threading
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from typing import Literal, Protocol
+from urllib.parse import parse_qs
 
 UnsubStatus = Literal["success", "failure"]
 AssetDir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
@@ -67,3 +68,13 @@ class ServerSimulation:
             self.httpd.shutdown()
             self.httpd.server_close()
             self.thread.join(timeout=1)
+
+
+def parse_path_and_query(path: str) -> tuple[str, dict[str, list[str]]]:
+    path = path.split("#")[0]
+    if len(parts := path.split("?")) > 1:
+        path = parts[0]
+        query = parse_qs(parts[1])
+    else:
+        query = {}
+    return path, query

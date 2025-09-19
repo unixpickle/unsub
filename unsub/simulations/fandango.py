@@ -9,7 +9,7 @@ from .base import (
 )
 
 
-class HoneywellSimulation(ServerSimulation):
+class FandangoSimulation(ServerSimulation):
     def __init__(self):
         self._status: UnsubStatus = "failure"
 
@@ -22,24 +22,21 @@ class HoneywellSimulation(ServerSimulation):
                 path, query = parse_path_and_query(path)
 
                 if path == "/":
-                    return os.path.join(asset_root, "honeywell", "index.html")
+                    return os.path.join(asset_root, "fandango.html")
 
                 if path == "/update_preferences":
                     parent._status = (
                         "success"
-                        if query["items[unsuball]"] == ["unsuball"]
+                        if all(query.get(f"sub{i}") is None for i in (1, 2, 3))
                         else "failure"
                     )
                     return os.path.join(asset_root, "updated.html")
-
-                if path == "/homepage":
-                    parent._status = "failure"
-                    return os.path.join(asset_root, "honeywell", "homepage.html")
+                elif path == "/unsubscribe_all":
+                    parent._status = "success"
+                    return os.path.join(asset_root, "updated.html")
 
                 rel_path = path.lstrip("/")
-                safe_path = os.path.normpath(
-                    os.path.join(asset_root, "honeywell", rel_path)
-                )
+                safe_path = os.path.normpath(os.path.join(asset_root, rel_path))
 
                 if not safe_path.startswith(asset_root + os.sep):
                     return os.path.join(asset_root, "404.html")

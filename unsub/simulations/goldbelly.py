@@ -1,7 +1,12 @@
 import os
-from urllib.parse import parse_qs
 
-from .base import AssetDir, BaseHandler, ServerSimulation, UnsubStatus
+from .base import (
+    AssetDir,
+    BaseHandler,
+    ServerSimulation,
+    UnsubStatus,
+    parse_path_and_query,
+)
 
 
 class GoldbellySimulation(ServerSimulation):
@@ -14,13 +19,7 @@ class GoldbellySimulation(ServerSimulation):
 
         class CustomHandler(BaseHandler):
             def translate_path(self, path: str) -> str:
-                # Remove query/fragment
-                path = path.split("#")[0]
-                if len(parts := path.split("?")) > 1:
-                    path = parts[0]
-                    query = parse_qs(parts[1])
-                else:
-                    query = {}
+                path, query = parse_path_and_query(path)
 
                 if path == "/":
                     return os.path.join(asset_root, "goldbelly", "index.html")
