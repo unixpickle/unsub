@@ -17,8 +17,9 @@ from .link import Link
 SCOPES = ["https://www.googleapis.com/auth/gmail.readonly"]
 
 # Your details
-CLIENT_ID = "523623906981-lk0mh2h9p0mm7o6dmtpei28jfg8ufkpm.apps.googleusercontent.com"
-CLIENT_SECRET = "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"
+CLIENT_ID: str | None = os.getenv("GOOGLE_CLIENT_ID", None)
+CLIENT_SECRET: str | None = os.getenv("GOOGLE_CLIENT_SECRET", None)
+PROJECT_ID: str | None = os.getenv("GOOGLE_PROJECT_ID", None)
 REDIRECT_URI_PORT = 1337
 
 
@@ -38,12 +39,15 @@ def save_creds(path: str, creds: Any) -> None:
 
 
 def build_flow() -> InstalledAppFlow:
+    assert (
+        CLIENT_ID is not None and CLIENT_SECRET is not None and PROJECT_ID is not None
+    )
     # Use PKCE with an "installed" client config; no client secret needed.
     client_config: dict[str, Any] = {
         "installed": {
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
-            "project_id": "spam-deleter-469300",
+            "project_id": PROJECT_ID,
             "auth_uri": "https://accounts.google.com/o/oauth2/auth",
             "token_uri": "https://oauth2.googleapis.com/token",
             "redirect_uris": [f"http://localhost:{REDIRECT_URI_PORT}/"],

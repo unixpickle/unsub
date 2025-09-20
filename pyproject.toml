@@ -15,4 +15,10 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["unsub"]
+packages = ["unsub", "unsub.simulations", "unsub.cmd"]
+
+[tool.setuptools.package-data]
+"unsub" = [
+    "simulations/assets/**/*",
+    "cmd/view_chat_assets/*",
+]
