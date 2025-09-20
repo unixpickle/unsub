@@ -30,6 +30,7 @@ def unsubscribe_on_website(
     max_output_len: int = 2048,
     wait_between_turns: float = 2.0,
     verbose: bool = False,
+    max_code_length_to_summarize: int = 32768 * 8,
 ) -> tuple[Literal["success", "failure", "timeout"], list[ChatMessage]]:
     driver.get(url)
 
@@ -37,6 +38,25 @@ def unsubscribe_on_website(
     previous_output = None
 
     previous_image: Image.Image | None = None
+
+    instructions = textwrap.dedent(
+        f"""\
+        Your goal is to figure out how to run JavaScript on the page to make sure the user is
+        unsubscribed from this source of spam and any other sources that this vendor might send.
+
+        * After every message you send, I will give you a new screenshot of the page (if it has changed), and any output from print() calls.
+        * You may think out loud in your response, but end the response with a code block to execute on the page.
+        * If the page already says that the user has been unsubscribed from ALL emails, then output the code success().
+        * If the page does not seem to have anything to do with unsubscribing, or you do not know what to do, then output the code failure().
+        * Do not output success() prematurely; make sure you see the latest page first.
+        * DO NOT attempt to submit forms (e.g. by pressing buttons) until you have VISUALLY CONFIRMED that you have checked the correct boxes or typed the correct text.
+        * To get more information from the page, you can use the provided print() function, which will call toString() on its argument. I will send the outputs of all prints in the next message to allow iteration.
+        * The output of print() will be truncated, so the page might have too much code to print directly in one call.
+        * I have provided an extra clickText() function which finds elements that contain the given text and clicks them all. It returns true if a click was performed, false otherwise.
+        * I have provided an extra scrollDown() function which scrolls down the page further (if it's a long page) so that you can see more content.
+        * The user's email address is: {user_email}
+        """
+    )
 
     for turn in range(max_steps):
         # Get raw PNG bytes
@@ -76,11 +96,41 @@ def unsubscribe_on_website(
             if verbose:
                 print("[NO PREVIOUS OUTPUT]")
             msg += "There was no print() output from previous code.\n\n"
-        if verbose:
-            print("-" * 50)
+
+        page_summary = driver.execute_script(
+            """
+            const tags = ["button", "input", "a", "form"];
+            const counts = tags.map(tag => {
+                const count = document.querySelectorAll(tag).length;
+                return `${count} <${tag}>`;
+            });
+            const elementSummary = "There are " + counts.join(", ");
+            
+            const totalHeight = document.documentElement.scrollHeight;
+            const viewportHeight = window.innerHeight;
+            const percent = (viewportHeight / totalHeight) * 100;
+            const heightSummary = `${percent.toFixed(2)}% of the height of the page is visible.`;
+
+            return heightSummary + '\\n' + elementSummary;
+            """
+        )
+
+        msg += page_summary + "\n"
+
+        if turn == 0:
+            code = driver.execute_script("return document.body.innerHTML")
+            if len(code) < max_code_length_to_summarize:
+                summary = describe_website_from_code(client, code)
+                if verbose:
+                    print("[SUMMARY]")
+                    print(summary)
+                    print("-" * 50)
+                msg += "Here is a summary for chunks of the HTML code on the page:\n"
+                msg += summary
+                msg += "\n\n"
 
         if identical_to_prev:
-            msg += "The screenshot has not changed from the previous message.\n\n"
+            msg += "The screenshot has not changed from the previous message."
             conversation.append(
                 {
                     "role": "user",
@@ -88,7 +138,7 @@ def unsubscribe_on_website(
                 }
             )
         else:
-            msg += "Below is a screenshot of a webpage from the email Unsubscribe link.\n\n"
+            msg += "Below is a screenshot of a webpage from the email Unsubscribe link."
             conversation.append(
                 {
                     "role": "user",
@@ -99,23 +149,6 @@ def unsubscribe_on_website(
                 }
             )
 
-        instructions = textwrap.dedent(
-            f"""\
-            Your goal is to figure out how to run JavaScript on the page to make sure the user is
-            unsubscribed from this source of spam and any other sources that this vendor might send.
-
-            * You may think out loud in your response, but end the response with a code block to execute on the page.
-            * If the page already says that the user has been unsubscribed from ALL emails, then output the code success().
-            * If the page does not seem to have anything to do with unsubscribing, or you do not know what to do, then output the code failure().
-            * Do not output success() prematurely; make sure you see the latest page first.
-            * To get more information from the page, you can use the provided print() function, which will call toString() on its argument. I will send the outputs of all prints in the next message to allow iteration.
-            * After every message you send, I will give you a new screenshot of the page (if it has changed), and any output from print() calls.
-            * The output of print() will be truncated, so the page might have too much code to print directly in one call.
-            * I have provided an extra clickText() function which finds elements that contain the given text and clicks them all. It returns true if a click was performed, false otherwise.
-            * I have provided an extra scrollDown() function which scrolls down the page further (if it's a long page) so that you can see more content.
-            * The user's email address is: {user_email}
-        """
-        )
         response = completion(
             client,
             instructions=instructions,
@@ -226,3 +259,30 @@ def unsubscribe_on_website(
         driver.switch_to.window(driver.window_handles[-1])
 
     return "timeout", conversation
+
+
+def describe_website_from_code(
+    client: OpenAI, code: str, max_code_len: int = 32768, block_overlap: int = 128
+):
+    code_blocks = [code]
+    if len(code) > max_code_len:
+        code_blocks = []
+        for i in range(0, len(code), max_code_len - block_overlap):
+            code_blocks.append(code[i : i + max_code_len])
+
+    instructions = textwrap.dedent(
+        """\
+        Below is a chunk of code from an email Unsubscribe webpage.
+        Describe in a few sentences, from this chunk, what you see that might be relevant to unsubscribing (using JavaScript).
+        Be specific about the kinds of HTML tags used, and IDs/values/text if applicable.
+
+        It is possible that you are not looking at a relevant chunk (e.g. this might just be stylesheets).
+        In this case, simply give a few word summary.
+        """
+    )
+
+    responses = []
+    for block in code_blocks:
+        response = completion(client, instructions=instructions, input=block)
+        responses.append(response)
+    return "\n\n".join(responses)

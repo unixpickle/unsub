@@ -1,6 +1,7 @@
+import time
 from typing import Any, Literal, TypedDict
 
-from openai import OpenAI
+from openai import OpenAI, RateLimitError
 
 
 class CompletionError(Exception):
@@ -30,16 +31,20 @@ class ChatMessage(TypedDict):
 
 
 def completion(client: OpenAI, instructions: str, input: Any) -> str:
-    try:
-        response = client.responses.create(
-            model="gpt-4o",
-            instructions=instructions,
-            input=input,
-        )
-    except KeyboardInterrupt:
-        raise
-    except Exception as exc:
-        raise CompletionError("API call failed") from exc
-    if err := response.error:
-        raise CompletionError(f"error: {err}")
-    return response.output_text
+    while True:
+        try:
+            response = client.responses.create(
+                model="gpt-4o",
+                instructions=instructions,
+                input=input,
+            )
+        except RateLimitError:
+            time.sleep(30.0)
+            continue
+        except KeyboardInterrupt:
+            raise
+        except Exception as exc:
+            raise CompletionError("API call failed") from exc
+        if err := response.error:
+            raise CompletionError(f"error: {err}")
+        return response.output_text

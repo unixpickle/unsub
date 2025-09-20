@@ -27,7 +27,7 @@ class HoneywellSimulation(ServerSimulation):
                 if path == "/update_preferences":
                     parent._status = (
                         "success"
-                        if query["items[unsuball]"] == ["unsuball"]
+                        if query.get("items[unsuball]") == ["unsuball"]
                         else "failure"
                     )
                     return os.path.join(asset_root, "updated.html")

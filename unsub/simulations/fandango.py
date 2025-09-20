@@ -34,6 +34,9 @@ class FandangoSimulation(ServerSimulation):
                 elif path == "/unsubscribe_all":
                     parent._status = "success"
                     return os.path.join(asset_root, "updated.html")
+                elif path == "/homepage":
+                    parent._status = "failure"
+                    return os.path.join(asset_root, "404.html")
 
                 rel_path = path.lstrip("/")
                 safe_path = os.path.normpath(os.path.join(asset_root, rel_path))
